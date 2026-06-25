@@ -1,0 +1,10 @@
+*.pdf*
+*.zip*
+*jsonl*
+*db*
+**.tar.gz*
+*tmp*
+*.txt*
+.venv/
+notebooks/
+__pycache__/
