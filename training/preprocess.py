@@ -30,6 +30,11 @@ def review_to_sentence_samples(review: dict, label_map: dict = None, nlp=None) -
 
     # Map the review rating to a label 0 (negative), 1 (neutral), or 2 (positive)
     rating = int(review["rating"])
+
+    # If the rating is not in the label map, return an empty list (no samples)
+    if rating not in label_map:
+        return []
+    
     label = label_map[rating]
 
     # Extract title and text, handling missing fields gracefully
@@ -105,5 +110,8 @@ def prepare_sentence_datasets(
         "text": [sample["text"] for sample in test_sentences],
         "review_rating": [sample["review_rating"] for sample in test_sentences],
     })
+
+    if len(train_sentences) == 0 or len(test_sentences) == 0:
+        raise ValueError("Empty dataset after preprocessing/splitting")
     
     return {"train": train_dataset, "test": test_dataset}
