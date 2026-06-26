@@ -42,3 +42,57 @@ def test_prepare_sentence_datasets_integration(data_file):
 
     # sentence split happened (should be more than 2 rows total)
     assert len(train) + len(test) >= 4
+
+def test_split_stability_deterministic():
+    a = prepare_sentence_datasets("tests/data/reviews.json", seed=42)
+    b = prepare_sentence_datasets("tests/data/reviews.json", seed=42)
+
+    assert len(a["train"]) == len(b["train"])
+    assert len(a["test"]) == len(b["test"])
+
+    assert set(a["train"]["text"]) == set(b["train"]["text"])
+
+import pytest
+from training.preprocess import prepare_sentence_datasets
+
+
+def test_no_sentence_level_leakage():
+    data_path = "tests/fixtures/sample_reviews.json"
+
+    splits = prepare_sentence_datasets(
+        data_files=data_path,
+        test_size=0.2,
+        seed=42,
+    )
+
+    train = splits["train"].to_pandas()
+    test = splits["test"].to_pandas()
+
+    # 1. HARD CHECK: identical sentence leakage
+    train_texts = set(train["text"].str.strip().tolist())
+    test_texts = set(test["text"].str.strip().tolist())
+
+    overlap = train_texts.intersection(test_texts)
+
+    assert len(overlap) == 0, f"Sentence leakage detected: {list(overlap)[:10]}"
+
+
+def test_no_review_overlap_if_id_exists():
+    data_path = "tests/data/reviews.json"
+
+    splits = prepare_sentence_datasets(
+        data_files=data_path,
+        test_size=0.2,
+        seed=42,
+    )
+
+    train = splits["train"].to_pandas()
+    test = splits["test"].to_pandas()
+
+    if "review_id" in train.columns:
+        train_ids = set(train["review_id"])
+        test_ids = set(test["review_id"])
+
+        overlap = train_ids.intersection(test_ids)
+
+        assert len(overlap) == 0, "Review-level leakage detected"

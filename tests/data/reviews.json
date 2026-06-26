@@ -1,4 +1,20 @@
 [
-  {"text": "Great product. Works well.", "rating": 5},
-  {"text": "Bad quality. Broke quickly.", "rating": 1}
+  {
+    "id": "r1",
+    "title": "Amazing book",
+    "text": "This book is amazing. I loved every chapter. Highly recommended!",
+    "rating": 5
+  },
+  {
+    "id": "r2",
+    "title": "Terrible experience",
+    "text": "Worst purchase ever. Broke after one day. Waste of money.",
+    "rating": 1
+  },
+  {
+    "id": "r3",
+    "title": "Okay product",
+    "text": "It works. Nothing special. Could be better.",
+    "rating": 3
+  }
 ]
