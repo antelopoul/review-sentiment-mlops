@@ -137,6 +137,16 @@ pip install fastapi uvicorn transformers optimum[onnxruntime] onnxruntime promet
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
+## Running Training
+
+Run the training script from the repository root using the project's `uv` runner:
+
+```bash
+uv run python -m training.train
+```
+
+This will execute `training/train.py` as a module.
+
 ---
 
 ## API Usage
