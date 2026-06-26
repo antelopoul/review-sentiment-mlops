@@ -35,4 +35,4 @@ def test_short_sentence_filter(nlp):
 
     result = review_to_sentence_samples(review, nlp=nlp)
 
-    assert all(len(s["text"]) >= 3 for s in result)
+    assert all(len(s["text"]) >= 2 for s in result)

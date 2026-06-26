@@ -8,7 +8,8 @@ def test_label_mapping(nlp):
 
     result = review_to_sentence_samples(review, label_map=label_map, nlp=nlp)
 
-    assert result[0]["review_rating"] == 0
+    assert result[0]["labels"] == 0
+    assert result[0]["review_rating"] == 1
 
 
 def test_default_label_map_used(nlp):
@@ -16,7 +17,8 @@ def test_default_label_map_used(nlp):
 
     result = review_to_sentence_samples(review, nlp=nlp)
 
-    assert result[0]["review_rating"] == 2
+    assert result[0]["labels"] == 2
+    assert result[0]["review_rating"] == 5
 
 def test_label_invariant(nlp):
     review = {"rating": 5, "text": "Good. Excellent."}
@@ -25,6 +27,6 @@ def test_label_invariant(nlp):
 
     result = review_to_sentence_samples(review, label_map=label_map, nlp=nlp)
 
-    labels = {r["review_rating"] for r in result}
+    labels = {r["labels"] for r in result}
 
     assert len(labels) == 1  # all sentences inherit same label
