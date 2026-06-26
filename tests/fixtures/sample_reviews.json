@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sample-1",
+    "title": "Great",
+    "text": "Works well. Highly recommended.",
+    "rating": 5
+  },
+  {
+    "id": "sample-2",
+    "title": "Bad",
+    "text": "Broke quickly. Would not buy again.",
+    "rating": 1
+  },
+  {
+    "id": "sample-3",
+    "title": "Okay",
+    "text": "It works. Nothing special.",
+    "rating": 3
+  },
+  {
+    "id": "sample-4",
+    "title": "Solid",
+    "text": "Good value. I am satisfied.",
+    "rating": 4
+  },
+  {
+    "id": "sample-5",
+    "title": "Poor",
+    "text": "Quality was poor. Very disappointing.",
+    "rating": 2
+  }
+]

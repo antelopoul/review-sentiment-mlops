@@ -16,5 +16,59 @@
     "title": "Okay product",
     "text": "It works. Nothing special. Could be better.",
     "rating": 3
+  },
+  {
+    "id": "r4",
+    "title": "Excellent service",
+    "text": "Customer service was very helpful and resolved my issue quickly.",
+    "rating": 5
+  },
+  {
+    "id": "r5",
+    "title": "Not worth it",
+    "text": "The product did not meet my expectations. I would not buy it again.",
+    "rating": 2
+  },
+  {
+    "id": "r6",
+    "title": "Great value",
+    "text": "For the price, this product is a great value. I am satisfied with my purchase.",
+    "rating": 4
+  },
+  {
+    "id": "r7",
+    "title": "Disappointing",
+    "text": "I was really looking forward to this, but it was a letdown.",
+    "rating": 2
+  },
+  {
+    "id": "r8",
+    "title": "Fantastic!",
+    "text": "Absolutely fantastic! Exceeded my expectations in every way.",
+    "rating": 5
+  },
+  {
+    "id": "r9",
+    "title": "Mediocre",
+    "text": "It's okay, but nothing to write home about. Average quality.",
+    "rating": 3
+  },
+  {
+    "id": "r10",
+    "title": "Highly recommend",
+    "text": "I would highly recommend this to anyone looking for a reliable product.",
+    "rating": 5
+  },
+  {
+    "id": "r11",
+    "title": "Poor quality",
+    "text": "The quality of this product is very poor. I am disappointed.",
+    "rating": 1
+  },
+  {
+    "id": "r12",
+    "title": "Satisfied",
+    "text": "I am satisfied with my purchase. It meets my needs.",
+    "rating": 4
   }
 ]
