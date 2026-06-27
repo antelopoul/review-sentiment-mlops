@@ -6,6 +6,7 @@ from transformers import (
 )
 from datasets import Dataset
 import os
+import torch
 
 
 class SentimentClassifier:
@@ -129,6 +130,7 @@ class SentimentClassifier:
             seed=42,
             logging_steps=100,
             save_total_limit=2,
+            report_to=["mlflow"] if use_mlflow else [],
         )
 
         # Create trainer
@@ -159,9 +161,17 @@ class SentimentClassifier:
         print("Starting fine-tuning with MLflow tracking...")
         trainer.train()
 
-        # Hugging Face natively logs eval metrics during training or when calling evaluate
         if use_mlflow:
-            trainer.evaluate() 
+            val_metrics = trainer.evaluate(
+                eval_dataset=val_tokenized,
+                metric_key_prefix="eval",
+            )
+            test_metrics = trainer.evaluate(
+                eval_dataset=test_tokenized,
+                metric_key_prefix="test",
+            )
+            mlflow.log_metrics(val_metrics)
+            mlflow.log_metrics(test_metrics)
         
         print(f"Model saved to {self.output_dir}")
         return trainer
@@ -191,6 +201,16 @@ class SentimentClassifier:
             max_length=self.max_length,
             return_tensors="pt",
         )
-        outputs = self.model(**inputs)
+
+        device = next(self.model.parameters()).device
+        inputs = {name: tensor.to(device) for name, tensor in inputs.items()}
+
+        was_training = self.model.training
+        self.model.eval()
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+        if was_training:
+            self.model.train()
+
         predictions = outputs.logits.argmax(dim=-1).tolist()
         return predictions
