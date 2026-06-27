@@ -7,4 +7,5 @@
 *.txt*
 .venv/
 notebooks/
+models/
 __pycache__/
