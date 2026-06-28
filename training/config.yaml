@@ -12,7 +12,7 @@ model:
   model_name: "sentence-transformers/all-MiniLM-L6-v2"
   num_labels: 3  # 0: negative, 1: neutral, 2: positive
   max_length: 128
-  output_dir: "./models/sentiment"
+  output_dir: "./models/sentimentv1"
 
 # Training hyperparameters
 training:
