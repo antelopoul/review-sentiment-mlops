@@ -3,42 +3,62 @@ name = "review-sentiment-mlops"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.10,<3.12"
 dependencies = [
-    "en-core-web-md==3.8.0",
-    "evaluate>=0.4.6",
-    "mlflow>=3.14.0",
-    "notebook>=7.6.0",
-    "onnx>=1.22.0",
-    "onnxruntime>=1.24.3",
-    "optimum[onnx]>=1.27.0",
-    "pytest>=9.1.1",
-    "scikit-learn>=1.7.2",
-    "spacy>=3.8.14",
+    # ------------------------------------------------------------------ #
+    # PROD / SERVING — the only deps that go into the Docker image.       #
+    # Keep this list minimal: no torch, no training tools.                #
+    # Generate requirements-serve.txt with: uv export --no-dev            #
+    # ------------------------------------------------------------------ #
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+    "gunicorn>=22.0.0",
+    "prometheus-client>=0.20.0",
+    "onnxruntime==1.18.1",   # CPU-only ONNX Runtime — no CUDA needed at serve time
+    "transformers==4.42.4",  # tokenizer only; model weights are ONNX, not PyTorch
+    "numpy<2.0.0",
 ]
 
 [dependency-groups]
+# ------------------------------------------------------------------ #
+# dev — GPU workstation: training + CUDA 12.1 torch + dev tools.      #
+# torch/torchaudio/torchvision resolve from pytorch-cu121 index.      #
+# Install with: uv sync --group dev                                   #
+# Docker uses --no-dev, so none of this enters the image.             #
+# ------------------------------------------------------------------ #
 dev = [
     "accelerate>=1.14.0",
     "datasets>=5.0.0",
+    "en-core-web-md==3.8.0",
     "evaluate>=0.4.6",
     "ipykernel>=7.3.0",
+    "locust>=2.44.4",
+    "mlflow>=3.14.0",
+    "notebook>=7.6.0",
+    "onnx>=1.22.0",
+    "onnxruntime-tools>=1.7.0",
+    "optimum[onnxruntime]==1.21.4",
     "pandas>=2.3.3,<3",
+    "pytest>=9.1.1",
     "scikit-learn>=1.7.2",
     "sentence-transformers>=5.6.0",
-    "torch==2.11.0+cu128",
-    "torchaudio==2.11.0+cu128",
-    "torchvision==0.26.0+cu128",
-    "transformers>=5.12.1",
+    "spacy>=3.8.14",
+    "torch==2.3.1",
+    "torchaudio==2.3.1",
+    "torchvision==0.18.1",
+    "transformers>=4.36.0,<4.58.0",
 ]
 
 [tool.uv.sources]
 en-core-web-md = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl" }
-torch = { index = "pytorch-cu128" }
-torchaudio = { index = "pytorch-cu128" }
-torchvision = { index = "pytorch-cu128" }
+# CUDA 12.1 builds — only active when the dev group is installed.
+# uv does not support the same package from two indexes across groups,
+# so torch is always CUDA here; production uses onnxruntime (CPU) only.
+torch     = { index = "pytorch-cu121" }
+torchaudio  = { index = "pytorch-cu121" }
+torchvision = { index = "pytorch-cu121" }
 
 [[tool.uv.index]]
-name = "pytorch-cu128"
-url = "https://download.pytorch.org/whl/cu128"
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
 explicit = true
