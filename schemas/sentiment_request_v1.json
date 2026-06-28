@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "schema_version": {
+      "const": "sentiment_request_v1",
+      "default": "sentiment_request_v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    }
+  },
+  "required": [
+    "text"
+  ],
+  "title": "SentimentRequestV1",
+  "type": "object",
+  "$id": "https://example.com/schemas/sentiment_request_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

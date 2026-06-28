@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "SentimentResponseV1": {
+      "properties": {
+        "schema_version": {
+          "const": "sentiment_response_v1",
+          "default": "sentiment_response_v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "prediction": {
+          "enum": [
+            "negative",
+            "neutral",
+            "positive"
+          ],
+          "title": "Prediction",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "integer"
+        },
+        "confidence": {
+          "title": "Confidence",
+          "type": "number"
+        },
+        "logits": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Logits",
+          "type": "array"
+        },
+        "model_version": {
+          "title": "Model Version",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "prediction",
+        "label",
+        "confidence",
+        "logits",
+        "model_version",
+        "request_id"
+      ],
+      "title": "SentimentResponseV1",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "sentiment_batch_response_v1",
+      "default": "sentiment_batch_response_v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/$defs/SentimentResponseV1"
+      },
+      "title": "Results",
+      "type": "array"
+    },
+    "model_version": {
+      "title": "Model Version",
+      "type": "string"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "results",
+    "model_version",
+    "request_id"
+  ],
+  "title": "SentimentBatchResponseV1",
+  "type": "object",
+  "$id": "https://example.com/schemas/sentiment_batch_response_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

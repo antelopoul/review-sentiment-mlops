@@ -1,0 +1,173 @@
+{
+  "$defs": {
+    "SentimentError": {
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "message"
+      ],
+      "title": "SentimentError",
+      "type": "object"
+    },
+    "SentimentMetrics": {
+      "properties": {
+        "latency_ms": {
+          "title": "Latency Ms",
+          "type": "number"
+        },
+        "model_latency_ms": {
+          "title": "Model Latency Ms",
+          "type": "number"
+        },
+        "tokenization_ms": {
+          "title": "Tokenization Ms",
+          "type": "number"
+        }
+      },
+      "required": [
+        "latency_ms",
+        "model_latency_ms",
+        "tokenization_ms"
+      ],
+      "title": "SentimentMetrics",
+      "type": "object"
+    },
+    "SentimentModelInfo": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "SentimentModelInfo",
+      "type": "object"
+    },
+    "SentimentResult": {
+      "properties": {
+        "label": {
+          "enum": [
+            "positive",
+            "neutral",
+            "negative"
+          ],
+          "title": "Label",
+          "type": "string"
+        },
+        "confidence": {
+          "title": "Confidence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "label",
+        "confidence"
+      ],
+      "title": "SentimentResult",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "sentiment_job_result_v1",
+      "default": "sentiment_job_result_v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "job_id": {
+      "title": "Job Id",
+      "type": "string"
+    },
+    "event": {
+      "const": "job_result",
+      "title": "Event",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "running",
+        "success",
+        "failed",
+        "timeout"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SentimentResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "metrics": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SentimentMetrics"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "model": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SentimentModelInfo"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SentimentError"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "job_id",
+    "event",
+    "timestamp",
+    "status"
+  ],
+  "title": "SentimentJobResultV1",
+  "type": "object",
+  "$id": "https://example.com/schemas/sentiment_job_result_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

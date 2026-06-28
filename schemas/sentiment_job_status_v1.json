@@ -1,0 +1,64 @@
+{
+  "properties": {
+    "schema_version": {
+      "const": "sentiment_job_status_v1",
+      "default": "sentiment_job_status_v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "job_id": {
+      "title": "Job Id",
+      "type": "string"
+    },
+    "event": {
+      "const": "status_update",
+      "title": "Event",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "running",
+        "success",
+        "failed",
+        "timeout"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "progress": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Progress",
+      "type": "number"
+    },
+    "message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Message"
+    }
+  },
+  "required": [
+    "job_id",
+    "event",
+    "timestamp",
+    "status",
+    "progress"
+  ],
+  "title": "SentimentJobStatusV1",
+  "type": "object",
+  "$id": "https://example.com/schemas/sentiment_job_status_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

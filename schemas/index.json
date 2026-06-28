@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-06-28T12:16:07.847308+00:00",
+  "schemas": [
+    {
+      "id": "sentiment_request_v1",
+      "file": "sentiment_request_v1.json",
+      "title": "SentimentRequestV1"
+    },
+    {
+      "id": "sentiment_response_v1",
+      "file": "sentiment_response_v1.json",
+      "title": "SentimentResponseV1"
+    },
+    {
+      "id": "sentiment_batch_request_v1",
+      "file": "sentiment_batch_request_v1.json",
+      "title": "SentimentBatchRequestV1"
+    },
+    {
+      "id": "sentiment_batch_response_v1",
+      "file": "sentiment_batch_response_v1.json",
+      "title": "SentimentBatchResponseV1"
+    },
+    {
+      "id": "sentiment_job_start_v1",
+      "file": "sentiment_job_start_v1.json",
+      "title": "SentimentJobStartV1"
+    },
+    {
+      "id": "sentiment_job_status_v1",
+      "file": "sentiment_job_status_v1.json",
+      "title": "SentimentJobStatusV1"
+    },
+    {
+      "id": "sentiment_job_result_v1",
+      "file": "sentiment_job_result_v1.json",
+      "title": "SentimentJobResultV1"
+    }
+  ]
+}

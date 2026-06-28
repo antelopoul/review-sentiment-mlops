@@ -1,0 +1,24 @@
+{
+  "properties": {
+    "schema_version": {
+      "const": "sentiment_batch_request_v1",
+      "default": "sentiment_batch_request_v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "texts": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Texts",
+      "type": "array"
+    }
+  },
+  "required": [
+    "texts"
+  ],
+  "title": "SentimentBatchRequestV1",
+  "type": "object",
+  "$id": "https://example.com/schemas/sentiment_batch_request_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

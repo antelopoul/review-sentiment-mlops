@@ -1,0 +1,98 @@
+{
+  "$defs": {
+    "JobInput": {
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "JobInput",
+      "type": "object"
+    },
+    "JobMetadata": {
+      "properties": {
+        "helpful_vote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Helpful Vote"
+        },
+        "verified_purchase": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verified Purchase"
+        }
+      },
+      "title": "JobMetadata",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "sentiment_job_start_v1",
+      "default": "sentiment_job_start_v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "job_id": {
+      "title": "Job Id",
+      "type": "string"
+    },
+    "event": {
+      "const": "job_start",
+      "title": "Event",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "input": {
+      "$ref": "#/$defs/JobInput"
+    },
+    "metadata": {
+      "$ref": "#/$defs/JobMetadata"
+    },
+    "status": {
+      "default": "queued",
+      "enum": [
+        "queued",
+        "running",
+        "success",
+        "failed",
+        "timeout"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "job_id",
+    "event",
+    "timestamp",
+    "input",
+    "metadata"
+  ],
+  "title": "SentimentJobStartV1",
+  "type": "object",
+  "$id": "https://example.com/schemas/sentiment_job_start_v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
