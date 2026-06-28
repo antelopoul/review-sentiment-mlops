@@ -1,7 +1,5 @@
-from re import split
 from typing import Optional
 import spacy
-from datasets import load_dataset, Dataset
 
 LABEL_MAP = {
     1: 0,  # negative
@@ -80,6 +78,9 @@ def prepare_sentence_datasets(
     :min_sentence_length: Minimum length of sentences to include.
     :return: A dict with 'train' and 'test' keys containing sentence-level datasets.
     """
+
+    from datasets import load_dataset, Dataset
+
     # Load the dataset from the specified files
     dataset = load_dataset("json", data_files=data_files, split="train")
     
