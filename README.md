@@ -1,18 +1,8 @@
-# Sentiment Analysis Service (MiniLM + ONNX + FastAPI)
+# Review Sentiment MLOps
 
-## Overview
+Low-latency sentiment classification service for product reviews. Fine-tuned MiniLM exported to INT8 ONNX, served via FastAPI with batch inference and Prometheus metrics.
 
-This project implements a **low-latency sentiment classification service** that categorizes review sentences into:
-
-* Positive
-* Neutral
-* Negative
-
-The system is optimized for **production-style inference** with:
-
-* P99 latency target < 300 ms
-* Local and cloud deployment compatibility
-* Full observability (logging + metrics)
+**Labels:** `negative` · `neutral` · `positive`
 
 ---
 
@@ -22,147 +12,143 @@ The system is optimized for **production-style inference** with:
 Client
   │
   ▼
-FastAPI Service
+FastAPI  (app/main.py)
+  │   ├── /predict        single text
+  │   ├── /predict/batch  up to 64 texts, one ONNX call
+  │   ├── /health
+  │   └── /metrics        Prometheus
+  ▼
+ONNX Runtime  (INT8 quantized MiniLM)
   │
   ▼
-ONNX Runtime Inference Engine
-  │
-  ▼
-MiniLM Sentiment Classifier
-  │
-  ▼
-Prediction (positive / neutral / negative)
-
-Monitoring Layer:
-  ├── Prometheus (/metrics)
-  └── Logging (structured logs)
+Prometheus metrics  (app/metrics.py)
+  ├── request latency histogram
+  ├── p95 / p99 rolling gauges (last 1000 requests)
+  ├── predictions by label
+  └── confidence distribution
 ```
 
-Key design principle:
-
-> Training uses transformer models, inference uses ONNX Runtime for speed.
+Training uses PyTorch. Inference uses ONNX Runtime — no PyTorch overhead at serve time.
 
 ---
 
-## Model Choice
-
-The system uses:
-
-* MiniLM (primary model)
-* Alternative baseline: DistilBERT
-
-Why:
-
-* Small footprint
-* Fast CPU inference
-* Strong performance on sentiment classification
-* Suitable for ONNX export
-
----
-
-## Training Approach
-
-Sentence-level classification:
-
-* Input: individual sentence review sentences
-* Label mapping from star ratings:
-
-  * 1–2 → negative
-  * 3 → neutral
-  * 4–5 → positive
-
-Multi-sentence reviews:
-
-* Each sentence inherits review-level rating
-
-We split the dataset with train/test ratio of 80/20, ensuring stratified sampling to maintain label distribution.
-After we preprocess the data to split in to individual sentences, we fine-tune MiniLM on the training set and evaluate on the test set.
-
----
-
-## Inference Stack
-
-* FastAPI for serving requests
-* ONNX Runtime for low-latency inference
-* MiniLM exported to ONNX format
-
----
-
-## Project Structure
+## Project structure
 
 ```
 .
 ├── app/
-│   ├── main.py              # FastAPI server
-│   ├── model.py             # ONNX inference wrapper
-│   ├── metrics.py           # Prometheus metrics
-│   └── schema.py            # request/response schemas
+│   ├── main.py          # FastAPI + ONNX inference server
+│   ├── schema.py        # Versioned Pydantic schemas (V1, V2 …)
+│   ├── metrics.py       # Prometheus metric definitions
+│   └── model.py         # Training-time classifier (not used at serve time)
 │
 ├── training/
-│   ├── train.py            # fine-tuning script
-│   └── preprocess.py       # dataset preparation
+│   ├── train.py         # Fine-tuning script
+│   └── preprocess.py    # Sentence splitting + label mapping
 │
 ├── onnx_model/
-│   └── model.onnx
+│   ├── model.onnx       # Full precision export
+│   └── model.int8.onnx  # INT8 quantized (used in production)
 │
-├── requirements.txt
+├── models/sentimentv1/  # Tokenizer files
 ├── Dockerfile
-└── README.md
+├── docker-compose.yml
+└── pyproject.toml
 ```
+
+---
+
+## Prerequisites
+
+- Python 3.10–3.11
+- [uv](https://docs.astral.sh/uv/) for dependency management
+- Model artifacts already present: `onnx_model/model.int8.onnx` and `models/sentimentv1/`
 
 ---
 
 ## Installation
 
-### 1. Create environment
+```bash
+uv sync
+```
+
+For training dependencies (PyTorch, datasets, etc.):
 
 ```bash
-conda create -n sentiment python=3.10 -y
-conda activate sentiment
+uv sync --group dev
 ```
 
 ---
 
-### 2. Install dependencies
+## Running locally
+
+### 1. Set the API key
+
+The server requires an `X-API-Key` header on every prediction request. Set a fixed key so it does not regenerate on restart:
 
 ```bash
-pip install fastapi uvicorn transformers optimum[onnxruntime] onnxruntime prometheus-client numpy
+# PowerShell
+$env:API_KEY = "mykey"
+
+# bash / zsh
+export API_KEY=mykey
+```
+
+Or create a `.env` file (picked up automatically by docker-compose):
+
+```
+API_KEY=mykey
+```
+
+If `API_KEY` is not set the server auto-generates one and prints it to the log on startup — copy it before making requests.
+
+### 2. Start the server
+
+```bash
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+With live reload during development:
+
+```bash
+uv run uvicorn app.main:app --port 8000 --reload
+```
+
+### 3. Verify
+
+```bash
+curl http://localhost:8000/health
+```
+
+```json
+{"status": "ok", "model": "./onnx_model/model.int8.onnx", "tokenizer": "./models/sentimentv1"}
 ```
 
 ---
 
-## Running Locally
+## API reference
 
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+All prediction endpoints require the header:
+
+```
+X-API-Key: <your key>
 ```
 
-## Running Training
-
-Run the training script from the repository root using the project's `uv` runner:
+### POST /predict — single text
 
 ```bash
-uv run python -m training.train
-```
-
-This will execute `training/train.py` as a module.
-
----
-
-## API Usage
-
-### Predict sentiment
-
-```bash
-POST /predict
+curl -s -X POST http://localhost:8000/predict \
+  -H "X-API-Key: mykey" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "This product is absolutely amazing!"}'
 ```
 
 Request:
 
 ```json
 {
-  "input_ids": [...],
-  "attention_mask": [...]
+  "schema_version": "sentiment_request_v1",
+  "text": "This product is absolutely amazing!"
 }
 ```
 
@@ -170,106 +156,199 @@ Response:
 
 ```json
 {
+  "schema_version": "sentiment_response_v1",
   "prediction": "positive",
-  "latency_ms": 42.3
+  "label": 2,
+  "confidence": 0.978,
+  "logits": [-3.1, -1.4, 4.2],
+  "model_version": "1.0.0",
+  "request_id": "a3f9e1b2"
+}
+```
+
+`label` mapping: `0` → negative, `1` → neutral, `2` → positive.
+
+---
+
+### POST /predict/batch — multiple texts (recommended for automation)
+
+Up to 64 texts per call. All texts are tokenized together and processed in a **single ONNX forward pass** — dramatically lower per-item latency than calling `/predict` in a loop.
+
+```bash
+curl -s -X POST http://localhost:8000/predict/batch \
+  -H "X-API-Key: mykey" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "texts": [
+      "Great quality, fast shipping!",
+      "Broke after two days, very disappointing.",
+      "It is okay, nothing special."
+    ]
+  }'
+```
+
+Request:
+
+```json
+{
+  "schema_version": "sentiment_batch_request_v1",
+  "texts": ["Great quality!", "Broke after two days.", "It is okay."]
+}
+```
+
+Response:
+
+```json
+{
+  "schema_version": "sentiment_batch_response_v1",
+  "results": [
+    {"prediction": "positive", "label": 2, "confidence": 0.96, "logits": [...], "model_version": "1.0.0", "request_id": "a1b2"},
+    {"prediction": "negative", "label": 0, "confidence": 0.91, "logits": [...], "model_version": "1.0.0", "request_id": "c3d4"},
+    {"prediction": "neutral",  "label": 1, "confidence": 0.74, "logits": [...], "model_version": "1.0.0", "request_id": "e5f6"}
+  ],
+  "model_version": "1.0.0",
+  "request_id": "batch-a1b2c3"
 }
 ```
 
 ---
 
-## Monitoring
+### GET /health
 
-### Prometheus metrics endpoint
+No auth required. Used by load balancers and container health checks.
 
-```
-GET /metrics
-```
+### GET /metrics
 
-Exposed metrics:
-
-* request count
-* latency histogram
-* error rate (optional extension)
-
----
-
-## Logging
-
-Structured logs capture:
-
-* request latency
-* model inference time
-* prediction distribution
-* error traces
-
----
-
-## Docker Deployment
+Prometheus text format. Scrape with Prometheus or inspect manually:
 
 ```bash
-docker build -t sentiment-service .
-docker run -p 8000:8000 sentiment-service
+curl http://localhost:8000/metrics
+```
+
+Key metrics:
+
+| Metric | Type | Description |
+|---|---|---|
+| `sentiment_request_latency_seconds` | Histogram | End-to-end request latency |
+| `sentiment_p95_latency_seconds` | Gauge | Rolling p95 over last 1000 requests |
+| `sentiment_p99_latency_seconds` | Gauge | Rolling p99 over last 1000 requests |
+| `sentiment_requests_total` | Counter | Total requests by model and status |
+| `sentiment_predictions_total` | Counter | Prediction counts by label |
+| `sentiment_prediction_confidence` | Histogram | Confidence score distribution |
+| `sentiment_errors_total` | Counter | Errors by exception type |
+| `sentiment_invalid_input_total` | Counter | Rejected requests (empty / too long) |
+
+---
+
+## Interactive docs (Swagger UI)
+
+Open [http://localhost:8000/docs](http://localhost:8000/docs) in the browser.
+
+Click **Authorize** (top right) → enter your raw API key value (e.g. `mykey`) → click Authorize → Close. All subsequent requests from the UI will include the header.
+
+---
+
+## Single vs batch — when to use which
+
+| Scenario | Endpoint | Why |
+|---|---|---|
+| User submits a review on a website | `/predict` | Real-time, result needed immediately |
+| Nightly job classifying new reviews from DB | `/predict/batch` | One round-trip for N reviews |
+| Historical backfill of 1M reviews | `/predict/batch` in chunks | Maximises ONNX throughput |
+| Kafka consumer processing review events | `/predict/batch` with micro-batching | Amortise network + session overhead |
+
+For automated review segment analysis, chunk your reviews into groups of **32–64** (the `MAX_BATCH_SIZE` limit) and send them in parallel workers. A single batch call for 64 reviews takes roughly the same time as 3–4 single calls.
+
+---
+
+## Running with Docker
+
+### Build and run
+
+```bash
+docker compose up --build
+```
+
+The service starts on port `8000`. Set the API key in your `.env` file before starting.
+
+### Load test (optional)
+
+```bash
+docker compose --profile loadtest up
+```
+
+Opens the Locust UI at [http://localhost:8089](http://localhost:8089).
+
+### Scaling workers
+
+Control the number of gunicorn workers via the env var (default 4):
+
+```bash
+WEB_CONCURRENCY=8 docker compose up
 ```
 
 ---
 
-## Cloud Readiness
+## Cloud deployment
 
-The system is cloud-compatible without modification:
+The container is stateless — mount or bake in the model artifacts and set `API_KEY` as a secret.
 
-* Stateless API design
-* Dockerized service
-* Environment-based configuration
-* CPU or GPU inference selectable
+### Environment variables
 
-Deployable to:
+| Variable | Default | Description |
+|---|---|---|
+| `API_KEY` | auto-generated | Auth key for prediction endpoints |
+| `MODEL_PATH` | `./onnx_model/model.int8.onnx` | Path to ONNX model file |
+| `TOKENIZER_PATH` | `./models/sentimentv1` | Path to tokenizer directory |
+| `WEB_CONCURRENCY` | `4` | Number of gunicorn workers |
 
-* Kubernetes (EKS / AKS / GKE)
-* AWS ECS
-* Azure Container Apps
-* Google Cloud Run
+### Platforms
 
----
+- **AWS ECS / Fargate** — push image to ECR, set env vars as secrets in the task definition
+- **Google Cloud Run** — `gcloud run deploy`, set `API_KEY` via Secret Manager
+- **Azure Container Apps** — set secrets in the container app environment
+- **Kubernetes (EKS / GKE / AKS)** — use a `Deployment` with a `Secret` for `API_KEY`; the `/health` endpoint is ready for liveness and readiness probes
 
-## Performance Targets
+### Kubernetes probe example
 
-On CPU:
-
-* P50 latency: ~20–50 ms
-* P95 latency: ~50–120 ms
-* P99 latency: < 150–250 ms
-
-Meets requirement:
-
-> P99 < 300 ms
-
----
-
-## Key Design Decisions
-
-* ONNX Runtime chosen for deterministic low-latency inference
-* MiniLM selected for best speed/accuracy trade-off
-* FastAPI chosen for lightweight production API layer
-* Prometheus used for observability
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 20
+  periodSeconds: 30
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 15
+```
 
 ---
 
-## Possible Improvements
+## Training
 
-* INT8 quantization for further latency reduction
-* Batch inference endpoint
-* GPU acceleration via CUDA EP
-* Kafka-based async ingestion pipeline
-* Model versioning (MLflow)
-* **Kubeflow Pipelines** – Introduce after POC validation. Start with local/manual workflows, containerize with Docker, then add Kubeflow for orchestration once the training→inference pipeline is proven and reproducible.
+Fine-tune the model from the repository root:
+
+```bash
+uv run python -m training.train
+```
+
+Export to ONNX and quantize after training:
+
+```bash
+uv run python export_quantize_onnx.py
+```
 
 ---
 
-## Summary
+## Performance targets (CPU)
 
-This system demonstrates a production-ready NLP inference pipeline with:
+| Percentile | Target | Model |
+|---|---|---|
+| p50 | ~20–50 ms | INT8 ONNX, batch=1 |
+| p95 | ~50–120 ms | INT8 ONNX, batch=1 |
+| p99 | < 300 ms | INT8 ONNX, batch=1 |
 
-* Efficient transformer model (MiniLM)
-* Optimized inference (ONNX Runtime)
-* Observable API layer (FastAPI + Prometheus)
-* Cloud-native deployment design
+Batch inference (32–64 texts) achieves ~5–8× better throughput than equivalent single calls at similar or lower p99.
