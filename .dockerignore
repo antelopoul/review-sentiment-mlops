@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing & dev tools
+locustfile.py
+results/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Version control
+.git/
+.gitignore
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+
+# Notebooks / experiments
+*.ipynb
+notebooks/
+
+# Secrets — never bake into the image
+.env
+*.env
+
+# Logs
+*.log
+logs/
+
+# Docker itself
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Version file is consumed by build.sh as a build arg, not copied into the image
+VERSION
+build.sh
+
+# Docs
+*.md

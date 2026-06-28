@@ -4,8 +4,14 @@
 *db*
 **.tar.gz*
 *tmp*
+*.env
 *.txt*
 .venv/
 notebooks/
 models/
+results/
+
+# Model artefacts — binary files, tracked via MLflow or model registry
+onnx_model/
+ts/
 __pycache__/
