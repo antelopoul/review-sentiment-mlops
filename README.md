@@ -58,11 +58,59 @@ Training uses PyTorch. Inference uses ONNX Runtime — no PyTorch overhead at se
 
 ---
 
+## Cloning the repository
+
+The ONNX models (`onnx_model/`) and tokenizer files (`models/sentimentv1/`) are stored in [Git LFS](https://git-lfs.com). You need Git LFS installed before cloning, otherwise those files will be empty pointer stubs.
+
+**1. Install Git LFS** (once per machine):
+
+```bash
+# macOS
+brew install git-lfs
+
+# Ubuntu / Debian
+sudo apt install git-lfs
+
+# Windows (winget)
+winget install GitHub.GitLFS
+```
+
+Then register the LFS hooks with Git:
+
+```bash
+git lfs install
+```
+
+**2. Clone the repo** — LFS files are downloaded automatically:
+
+```bash
+git clone https://github.com/<your-org>/review-sentiment-mlops.git
+cd review-sentiment-mlops
+```
+
+**3. Verify the artifacts are real files** (not pointer stubs):
+
+```bash
+git lfs ls-files
+# Should list:
+#   onnx_model/model.onnx
+#   onnx_model/model.int8.onnx
+#   models/sentimentv1/...
+```
+
+If you already cloned without LFS, pull the real files now:
+
+```bash
+git lfs pull
+```
+
+---
+
 ## Prerequisites
 
 - Python 3.10–3.11
 - [uv](https://docs.astral.sh/uv/) for dependency management
-- Model artifacts already present: `onnx_model/model.int8.onnx` and `models/sentimentv1/`
+- Git LFS (see above) — required to download the ONNX models and tokenizer
 
 ---
 
